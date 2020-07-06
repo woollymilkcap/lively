@@ -116,6 +116,7 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="LivelyTemplate.cs" />
     <Compile Include="LivelyTemplate.xaml.cs">
       <DependentUpon>LivelyTemplate.xaml</DependentUpon>
     </Compile>
