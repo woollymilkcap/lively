@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
+using System.Windows.Interop;
+using System.Windows.Threading;
 
 namespace livelywpf.Core
 {
@@ -14,6 +17,7 @@ namespace livelywpf.Core
         IntPtr GetHWND();
         void SetHWND(IntPtr hwnd);
         Process GetProcess();
+        void Show();
         void Pause();
         void Play();
         void Stop();
@@ -24,12 +28,80 @@ namespace livelywpf.Core
     #endregion interface
 
     #region video players
-    public class VideoPlayerWPF : IWallpaper
+
+    public class VideoPlayerMPV : IWallpaper
     {
-        public VideoPlayerWPF(MediaElementWPF player, IntPtr hwnd, LibraryModel model, Screen display)
+        public VideoPlayerMPV(string filePath, LibraryModel model, Screen display)
+        {
+            Player = new MPVElement(filePath);
+            this.Model = model;
+            this.Display = display;
+        }
+
+        IntPtr HWND { get; set; }
+        MPVElement Player { get; set; }
+        LibraryModel Model { get; set; }
+        Screen Display { get; set; }
+        public WallpaperType GetWallpaperType()
+        {
+            return WallpaperType.video;
+        }
+        public LibraryModel GetWallpaperData()
+        {
+            return Model;
+        }
+        public IntPtr GetHWND()
+        {
+            return HWND;
+        }
+        public void SetHWND(IntPtr hwnd)
         {
             this.HWND = hwnd;
-            this.Player = player;
+        }
+        public Process GetProcess()
+        {
+            throw new NotImplementedException();
+        }
+        public void Play()
+        {
+            Player.PlayMedia();
+        }
+        public void Pause()
+        {
+            Player.PausePlayer();
+        }
+        public void Stop()
+        {
+            Player.StopPlayer();
+        }
+        public void Close()
+        {
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background, new ThreadStart(delegate
+            {
+                Player.Close();
+            }));
+        }
+
+        public Screen GetScreen()
+        {
+            return Display;
+        }
+
+        public void Show()
+        {
+            if (Player != null)
+            {
+                Player.Show();
+                HWND = new WindowInteropHelper(Player).Handle;
+            }
+        }
+    }
+
+    public class VideoPlayerWPF : IWallpaper
+    {
+        public VideoPlayerWPF(string filePath, LibraryModel model, Screen display)
+        {
+            Player = new MediaElementWPF(filePath);
             this.Model = model;
             this.Display = display;
         }
@@ -72,12 +144,24 @@ namespace livelywpf.Core
         }
         public void Close()
         {
-            Player.Close();
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background, new ThreadStart(delegate
+            {
+                Player.Close();
+            }));
         }
 
         public Screen GetScreen()
         {
             return Display;
+        }
+
+        public void Show()
+        {
+            if(Player != null)
+            {
+                Player.Show();
+                HWND = new WindowInteropHelper(Player).Handle;
+            }
         }
     }
 
@@ -86,10 +170,9 @@ namespace livelywpf.Core
     #region gif players
     public class GIFPlayerUWP : IWallpaper
     {
-        public GIFPlayerUWP(GIFViewUWP player, IntPtr hwnd, LibraryModel model, Screen display)
+        public GIFPlayerUWP(string filePath, LibraryModel model, Screen display)
         {
-            this.HWND = hwnd;
-            this.Player = player;
+            Player = new GIFViewUWP(filePath);
             this.Model = model;
             this.Display = display;
         }
@@ -99,7 +182,10 @@ namespace livelywpf.Core
         Screen Display { get; set; }
         public void Close()
         {
-            Player.Close();
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background, new ThreadStart(delegate
+            {
+                Player.Close();
+            }));
         }
 
         public IntPtr GetHWND()
@@ -129,8 +215,7 @@ namespace livelywpf.Core
 
         public void Pause()
         {
-            throw new NotImplementedException();
-            //Player.Pause();
+            Player.Stop();
         }
 
         public void Play()
@@ -141,6 +226,15 @@ namespace livelywpf.Core
         public void SetHWND(IntPtr hwnd)
         {
             this.HWND = hwnd;
+        }
+
+        public void Show()
+        {
+            if(Player != null)
+            {
+                Player.Show();
+                HWND = new WindowInteropHelper(Player).Handle;
+            }
         }
 
         public void Stop()
@@ -154,10 +248,42 @@ namespace livelywpf.Core
     #region web browsers
     public class WebProcess : IWallpaper
     {
-        public WebProcess(Process proc, IntPtr hwnd, LibraryModel model, Screen display)
+        public WebProcess(string path, LibraryModel model, Screen display)
         {
-            this.HWND = hwnd;
-            this.Proc = proc;
+            string cmdArgs;
+            if (model.LivelyInfo.Type == WallpaperType.web)
+            {
+                cmdArgs = "--url " + "\"" + path + "\"" + " --type local" + " --display " + "\"" + display + "\"" +
+                              " --property " + "\"" + System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Lively Wallpaper", "SaveData", "wpdata") + "\"";
+            }
+            else if (model.LivelyInfo.Type == WallpaperType.webaudio)
+            {
+                cmdArgs = "--url " + "\"" + path + "\"" + " --type local" + " --display " + "\"" + display + "\"" + " --audio true" +
+                      " --property " + "\"" + System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Lively Wallpaper", "SaveData", "wpdata") + "\"";
+            }
+            else
+            {
+                cmdArgs = "--url " + "\"" + path + "\"" + " --type online" + " --display " + "\"" + display + "\"";
+            }
+
+            ProcessStartInfo start = new ProcessStartInfo
+            {
+                Arguments = cmdArgs,
+                FileName = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Lively Wallpaper", "external", "cef", "LivelyCefSharp.exe"),
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                WorkingDirectory = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Lively Wallpaper", "external", "cef")
+            };
+
+            Process webProcess = new Process
+            {
+                StartInfo = start,
+                EnableRaisingEvents = true
+            };
+            //webProcess.OutputDataReceived += WebProcess_OutputDataReceived;
+
+            this.Proc = webProcess;
             this.Model = model;
             this.Display = display;
         }
@@ -173,16 +299,15 @@ namespace livelywpf.Core
                 Proc.StandardInput.WriteLine("lively:terminate");
                 Proc.Close();
             }
-            catch { }
-            /*
-            //force close.
-            try
-            {
-                Proc.Kill();
-                Proc.Close();
-            }
-            catch { }
-            */
+            catch {
+                try
+                {
+                    //force terminate.
+                    Proc.Kill();
+                    Proc.Close();
+                }
+                catch { }
+            }         
         }
 
         public IntPtr GetHWND()
@@ -225,6 +350,19 @@ namespace livelywpf.Core
         public void SetHWND(IntPtr hwnd)
         {
             this.HWND = hwnd;
+        }
+
+        public void Show()
+        {
+            if (Proc != null)
+            {
+                try
+                {
+                    Proc.Start();
+                    Proc.BeginOutputReadLine();
+                }
+                catch { }
+            }
         }
 
         public void Stop()
@@ -316,6 +454,11 @@ namespace livelywpf.Core
         public Screen GetScreen()
         {
             return Display;
+        }
+
+        public void Show()
+        {
+            throw new NotImplementedException();
         }
     }
 
