@@ -52,6 +52,7 @@ namespace livelywpf
                 navView.MenuItems.Add(CreateMenu("Layout", "layout", Symbol.ViewAll));
                 navView.MenuItems.Add(CreateMenu("Playlist", "playlist", Symbol.SlideShow));
                 navView.MenuItems.Add(CreateMenu("About", "about", Symbol.Comment));
+                navView.MenuItems.Add(CreateMenu("Template", "template", Symbol.Comment)); //Template
                 navView.ItemInvoked += NavView_ItemInvoked;
 
                 navView.SelectedItem = navView.MenuItems.ElementAt(0);
@@ -77,6 +78,9 @@ namespace livelywpf
                 {
                     case "library":
                         ContentFrame.Navigate(typeof(livelywpf.Views.LibraryView), new Uri("Views/LibraryView.xaml", UriKind.Relative), new EntranceNavigationTransitionInfo());
+                        break;
+                    case "template":
+                        ContentFrame.Navigate(typeof(livelywpf.Views.TemplateView), new Uri("Views/TemplateView.xaml", UriKind.Relative), new EntranceNavigationTransitionInfo());
                         break;
                     default:
                         //ContentFrame.Navigate(typeof(livelywpf.Views.LibraryView), new Uri("Views/LibraryView.xaml", UriKind.Relative), new DrillInNavigationTransitionInfo()); //new EntranceNavigationTransitionInfo()
