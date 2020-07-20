@@ -23,7 +23,7 @@ namespace livelywpf.Views
         public SettingsView()
         {
             InitializeComponent();
-            //SettingsViewModel vm = new SettingsViewModel();
+            SettingsViewModel vm = new SettingsViewModel();
             this.DataContext = Program.SettingsVM;
         }
 

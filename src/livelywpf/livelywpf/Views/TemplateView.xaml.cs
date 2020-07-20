@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Toolkit.Wpf.UI.XamlHost;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
@@ -15,6 +16,8 @@ using Windows.Foundation.Metadata;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
+
+
 namespace livelywpf.Views
 {
     /// <summary>
@@ -25,20 +28,21 @@ namespace livelywpf.Views
         //public TemplateViewModel TemplateVM { get; set; }
 
         public TemplateView()
-        {
-            InitializeComponent();
-            //TemplateVM = new TemplateViewModel();
-            //this.DataContext = TemplateVM; //uwp control also gets binded..
+        {   //TODO
+            InitializeComponent(); // object reference error - do check
+            
+            //livelysettings.SettingsPage userControl = WindowsXamlHost.GetUwpInternalObject() as livelytemplate.TemplatePage;
         }
 
         private void LivelyTemplateView_ChildChanged(object sender, EventArgs e)
         {
-            //
+            
         }
 
         private async void LivelyTemplate_SelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
         {
             //
         }
+
     }
 }
