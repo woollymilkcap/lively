@@ -1,15 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Mpv.NET.Player;
 
 namespace livelywpf
@@ -37,7 +28,6 @@ namespace livelywpf
             player.API.SetPropertyString("hwdec", "auto");
             player.API.SetPropertyString("keepaspect", "no");
             player.Load(filePath);
-            player.Resume();
         }
 
         private void Player_MediaError(object sender, EventArgs e)

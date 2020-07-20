@@ -38,20 +38,22 @@ namespace livelywpf
             pauseTrayBtn.Click += (s, e) => ToggleWallpaperPlaybackState();
             _notifyIcon.ContextMenuStrip.Items.Add(pauseTrayBtn);
 
+            _notifyIcon.ContextMenuStrip.Items.Add("Close All Wallpapers", null).Click += (s, e) => SetupDesktop.CloseAllWallpapers();
+
             _notifyIcon.ContextMenuStrip.Items.Add("-");
             _notifyIcon.ContextMenuStrip.Items.Add("Exit", Properties.Icons.icons8_close_window_961).Click += (s, e) => Program.ExitApplication();
         }
 
         private static void ToggleWallpaperPlaybackState()
         {
-            if(Playback.GetWallpaperPlaybackState() == PlaybackState.play)
+            if(Playback.PlaybackState == PlaybackState.play)
             {
-                Playback.SetWallpaperPlaybackState(PlaybackState.paused);
+                Playback.PlaybackState = PlaybackState.paused;
                 pauseTrayBtn.Checked = true;
             }
             else
             {
-                Playback.SetWallpaperPlaybackState(PlaybackState.play);
+                Playback.PlaybackState = PlaybackState.play;
                 pauseTrayBtn.Checked = false;
             }
         }

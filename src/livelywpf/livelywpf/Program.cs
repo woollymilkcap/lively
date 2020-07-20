@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace livelywpf
@@ -17,6 +19,7 @@ namespace livelywpf
 
         public static SettingsViewModel SettingsVM = new SettingsViewModel();
         public static ApplicationRulesViewModel AppRulesVM = new ApplicationRulesViewModel();
+        public static LibraryViewModel LibraryVM = new LibraryViewModel();
 
         [System.STAThreadAttribute()]
         public static void Main()
@@ -58,6 +61,49 @@ namespace livelywpf
         private static void App_Startup(object sender, StartupEventArgs e)
         {
             sysTray = new Systray();
+            //AppUpdater();
+        }
+        private static async void AppUpdater()
+        {
+            try
+            {
+                var gitRelease = await UpdaterGithub.GetLatestRelease("lively", "rocksdanister", 10000);
+                int result = UpdaterGithub.CompareAssemblyVersion(gitRelease);
+                if (result > 0)
+                {
+                    try
+                    {
+                        //download asset format: lively_setup_x86_full_vXXXX.exe, XXXX - 4 digit version no.
+                        var gitUrl = await UpdaterGithub.GetAssetUrl("lively_setup_x86_full", gitRelease, "lively", "rocksdanister");
+
+                        //changelog text
+                        StringBuilder sb = new StringBuilder(gitRelease.Body);
+                        //formatting git text.
+                        sb.Replace("#", "").Replace("\t", "  ");
+                        Views.AppUpdaterView updateWindow = new Views.AppUpdaterView(new Uri(gitUrl), sb.ToString())
+                        {
+                            WindowStartupLocation = WindowStartupLocation.CenterScreen
+                        };
+                        updateWindow.Show();
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Error("Error retriving asseturl for update: " + e.Message);
+                    }
+                }
+                else if (result < 0)
+                {
+                    //beta release.
+                }
+                else
+                {
+                    //up-to-date
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Git update check fail:" + e.Message);
+            }
         }
 
         private static void App_SessionEnding(object sender, SessionEndingCancelEventArgs e)

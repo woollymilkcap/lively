@@ -423,6 +423,27 @@ namespace livelywpf
             }
         }
 
+        private LivelyMediaPlayer _videoPlayer;
+        public LivelyMediaPlayer VideoPlayer
+        {
+            get { return _videoPlayer; }
+            set
+            {
+                _videoPlayer = value;
+                OnPropertyChanged("VideoPlayer");
+            }
+        }
+
+        private bool _gifCapture;
+        public bool GifCapture
+        {
+            get { return _gifCapture; }
+            set
+            {
+                _gifCapture = value;
+                OnPropertyChanged("GifCapture");
+            }
+        }
         /*
         //todo need to rewrite audio manager from scratch.
         public bool MuteVideo { get; set; }
@@ -456,7 +477,7 @@ namespace livelywpf
             AppFocusPause = AppRulesEnum.ignore;
             AppFullscreenPause = AppRulesEnum.pause;
             BatteryPause = AppRulesEnum.ignore;
-
+            VideoPlayer = LivelyMediaPlayer.libvlc;
             /*
             VidPlayer = VideoPlayer.windowsmp;
             //CurrWallpaperPath = null;
@@ -478,7 +499,7 @@ namespace livelywpf
             //media scaling
             ScalerVideo = System.Windows.Media.Stretch.Fill;
             ScalerGif = System.Windows.Media.Stretch.Fill;
-
+            GifCapture = true;
             /*
             WarningApp = 0;
             WarningUnity = 0;

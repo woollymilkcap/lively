@@ -8,24 +8,19 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace livelywpf.Views
 {
     /// <summary>
-    /// Interaction logic for ApplicationRulesView.xaml
+    /// Interaction logic for AddWallpaperView.xaml
     /// </summary>
-    public partial class ApplicationRulesView : Window
+    public partial class AddWallpaperView : Page
     {
-        public ApplicationRulesView()
+        public AddWallpaperView()
         {
             InitializeComponent();
-            this.DataContext = Program.AppRulesVM;
-        }
-
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            Program.AppRulesVM.UpdateDiskFile();
         }
     }
 }
